@@ -1,4 +1,5 @@
 import { App, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import {argdown} from "@argdown/node";
 
 interface MyPluginSettings {
 	mySetting: string;
@@ -51,6 +52,8 @@ export default class MyPlugin extends Plugin {
 		});
 
 		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+
+		console.log(argdown);
 	}
 
 	onunload() {

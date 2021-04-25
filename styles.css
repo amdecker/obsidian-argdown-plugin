@@ -1,4 +1,9 @@
 /* Sets all the text color to red! */
 body {
-    color: rebeccapurple;
+    /*color: lightblue;*/
+
+}
+.cm-header-1 {
+    /*color:red;*/
+    /*font-size: small;*/
 }

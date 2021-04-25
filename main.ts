@@ -1,5 +1,16 @@
-import { App, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-import {argdown} from "@argdown/node";
+import {
+	App, Component,
+	ItemView,
+	Modal,
+	Notice,
+	Plugin,
+	PluginSettingTab,
+	Setting,
+	Vault,
+	Workspace,
+	WorkspaceLeaf
+} from 'obsidian';
+import {doArgdownProcessing, getSVG} from './util';
 
 interface MyPluginSettings {
 	mySetting: string;
@@ -49,11 +60,43 @@ export default class MyPlugin extends Plugin {
 
 		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
 			console.log('click', evt);
+			console.log(document);
+
+		});
+		// this.registerDomEvent(, 'click', callback);
+		console.log("hi");
+		console.log(document.getElementsByClassName('svg'))
+		// te
+		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+		// this.registerView("test", (leaf: WorkspaceLeaf) => new SampleView(leaf, fileInfo));
+
+
+		this.addCommand({
+			id: 'app:obsidian-sample-plugin', //todo change id
+			name: 'Preview the current note as an Argument Map',
+			callback: () => this.showPreview(),
+			hotkeys: []
 		});
 
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
 
-		console.log(argdown);
+	}
+
+	async showPreview() {
+		const fileInfo = this.app.workspace.activeLeaf.view.getState().file;
+		console.log(fileInfo);
+
+			// activeLeafPath(this.workspace), basename: this.activeLeafName(this.workspace)};
+		let md = await this.app.vault.adapter.read(fileInfo);
+		// console.log("md: " + md);
+		const svg = await doArgdownProcessing(md);
+		// this.app.workspace.activeLeaf.getRoot().
+		const preview = this.app.workspace.splitActiveLeaf("vertical");
+		const mmPreview = new SampleView(preview, svg);
+		preview.open(mmPreview);
+
+		//
+		// doArgdownProcessing("")
+		// console.log(await getSVG());
 	}
 
 	onunload() {
@@ -66,6 +109,27 @@ export default class MyPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+}
+class SampleView extends ItemView {
+	vault: Vault;
+	workspace: Workspace;
+	getDisplayText(): string {
+		return "test";
+	}
+	getViewType(): string {
+		return "test";
+	}
+	constructor(leaf: WorkspaceLeaf, svg:any){
+		super(leaf);
+		this.vault = this.app.vault;
+		this.workspace = this.app.workspace;
+
+		const c = this.containerEl.children[1];
+		const t = document.createElement("div");
+		t.innerHTML = svg;
+		c.appendChild(t);
 	}
 }
 
@@ -112,4 +176,5 @@ class SampleSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 	}
+
 }

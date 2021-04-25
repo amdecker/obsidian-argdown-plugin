@@ -1,3 +1,6 @@
+got it to partially work by changing rollup.config.js and adding `    "rollup-plugin-node-builtins": "^2.1.2",
+"rollup-plugin-node-globals": "^1.4.0",`
+
 ## Obsidian Sample Plugin
 
 This is a sample plugin for Obsidian (https://obsidian.md).

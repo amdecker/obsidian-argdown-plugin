@@ -11,6 +11,30 @@ import {
 	WorkspaceLeaf
 } from 'obsidian';
 import {doArgdownProcessing, getSVG} from './util';
+// import "./mode/argdown"
+//
+// import "./lib/codemirror";
+// import "./lib/argdown-codemirror-mode"
+// import "./mode/codemirror-argdown.css"
+
+import './lib/codemirror';
+import './lib/simple';
+import "./mode/argdown";
+import "./mode/codemirror-argdown.css";
+
+// import "@argdown/codemirror-mode";
+// // import "codemirror";
+// import "codemirror/addon/mode/simple.js"
+// import "./node_modules/@argdown/codemirror-mode/codemirror-argdown.css";
+// import CodeMirror from "codemirror";
+// import "./lib/codemirror"
+// import * as CodeMirror from "codemirror";
+
+
+// var mode = require("argdown-codemirror-mode");
+// var CodeMirror = require("codemirror");
+// // Activate the simple mode addon
+// require("codemirror/addon/mode/simple.js");
 
 interface MyPluginSettings {
 	mySetting: string;
@@ -34,23 +58,23 @@ export default class MyPlugin extends Plugin {
 
 		this.addStatusBarItem().setText('Status Bar Text');
 
-		this.addCommand({
-			id: 'open-sample-modal',
-			name: 'Open Sample Modal',
-			// callback: () => {
-			// 	console.log('Simple Callback');
-			// },
-			checkCallback: (checking: boolean) => {
-				let leaf = this.app.workspace.activeLeaf;
-				if (leaf) {
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-					return true;
-				}
-				return false;
-			}
-		});
+		// this.addCommand({
+		// 	id: 'open-sample-modal',
+		// 	name: 'Open Sample Modal',
+		// 	// callback: () => {
+		// 	// 	console.log('Simple Callback');
+		// 	// },
+		// 	checkCallback: (checking: boolean) => {
+		// 		let leaf = this.app.workspace.activeLeaf;
+		// 		if (leaf) {
+		// 			if (!checking) {
+		// 				new SampleModal(this.app).open();
+		// 			}
+		// 			return true;
+		// 		}
+		// 		return false;
+		// 	}
+		// });
 
 		this.addSettingTab(new SampleSettingTab(this.app, this));
 
@@ -65,8 +89,21 @@ export default class MyPlugin extends Plugin {
 		});
 		// this.registerDomEvent(, 'click', callback);
 		console.log("hi");
-		console.log(document.getElementsByClassName('svg'))
-		// te
+		this.app.workspace.iterateCodeMirrors(cm => cm.setOption("mode", cm.getOption("mode")))
+
+		// console.log(document.getElementsByClassName('svg'))
+		// console.log(CodeMirror.modes);
+		// var mode = require("argdown-codemirror-mode");
+		// var CodeMirror = require("codemirror");
+		// // Activate the simple mode addon
+		// require("codemirror/addon/mode/simple.js");
+		// Define the mode
+		// CodeMirror.defineSimpleMode("argdown", mode);
+		//
+		// this.app.workspace.iterateCodeMirrors(cm => cm.setOption("mode", cm.getOption("mode")))
+
+
+
 		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
 		// this.registerView("test", (leaf: WorkspaceLeaf) => new SampleView(leaf, fileInfo));
 
@@ -81,18 +118,29 @@ export default class MyPlugin extends Plugin {
 
 	}
 
+
 	async showPreview() {
 		const fileInfo = this.app.workspace.activeLeaf.view.getState().file;
 		console.log(fileInfo);
 
 			// activeLeafPath(this.workspace), basename: this.activeLeafName(this.workspace)};
 		let md = await this.app.vault.adapter.read(fileInfo);
+		const regex = /^```argdown$(.*\s*)*(^```$)/gm;
+		const argdownBlockMatch = md.match(regex);
+		if(!argdownBlockMatch) {
+			return;
+		}
+
+		console.log("argdown match");
+		console.log(argdownBlockMatch);
 		// console.log("md: " + md);
-		const svg = await doArgdownProcessing(md);
+		const argdownBlockContents = argdownBlockMatch[0].substring("```argdown\n".length, argdownBlockMatch[0].length - '```\n'.length);
+		const svg = await doArgdownProcessing(argdownBlockContents);
 		// this.app.workspace.activeLeaf.getRoot().
 		const preview = this.app.workspace.splitActiveLeaf("vertical");
 		const mmPreview = new SampleView(preview, svg);
 		preview.open(mmPreview);
+
 
 		//
 		// doArgdownProcessing("")

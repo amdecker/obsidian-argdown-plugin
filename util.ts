@@ -1,36 +1,29 @@
 import {exec} from "child_process";
 const isWin = process.platform === "win32";
 
-export const doArgdownProcessing = async (fileContents:string) => {
-	console.log("FC " + fileContents);
-	if (await createTempFile(fileContents))
+export const doArgdownProcessing = async (fileContents:string, nameFile: string) => {
+	if (await createTempFile(fileContents, nameFile))
 	{
-		let command = "argdown map ./argmaps/test.md ./argmaps --format svg";
+		let command = `argdown web-component  "/argmaps/${nameFile}.md" ./argmaps`
 		if (isWin) {
-			command = 'argdown map %CD%\\argmaps\\test.md %CD%\\argmaps --format svg';
+			command = `argdown web-component "%CD%\\argmaps\\${nameFile}.md" %CD%\\argmaps`
 		}
+
 		await runCmd(command);
-		return await getSVG()
+		return await getWebComponent(nameFile);
 	}
 
 };
 
-const createTempFile = (fileContent:string) => {
+const createTempFile = (fileContent:string, nameFile: string) => {
 	return new Promise(resolve => {
 		var fs = require('fs');
-
-		// Change the content of the file as you want
-		// or either set fileContent to null to create an empty file
-
-		// The absolute path of the new file with its name
-		let path = "./argmaps/test.md";
-
+		let path = `./argmaps/${nameFile}.md`;
 		fs.writeFile(path, fileContent, (err: any) => {
 			if (err) {
 				throw err;
 				resolve(false);
 			}
-
 			console.log("The file was succesfully saved!");
 			resolve(true);
 		});
@@ -38,22 +31,21 @@ const createTempFile = (fileContent:string) => {
 
 };
 
-export const getSVG = () => {
-	let command = "cat ./argmaps/test.svg";
+export const getWebComponent = async (nameFile: string) => {
+	let command = `cat "./argmaps/${nameFile}.component.html"`;
 	if (isWin) {
-		command = 'type %CD%\\argmaps\\test.svg';
+		command = `type "%CD%\\argmaps\\${nameFile}.component.html"`;
 	}
-	return runCmd(command);
+	await runCmd(command);
+	return `argmaps\\${nameFile}.component.html`;
 
 };
 
 const runCmd = (command:string) => {
 	return new Promise(resolve => {
 		const ls = exec(command);
-		// sampleView.load();
 		const chunks:String[] = [];
 		ls.stdout.on('data', (data) => {
-			console.log(`stdout: ${data}`);
 			chunks.push(data);
 		});
 

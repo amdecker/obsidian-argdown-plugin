@@ -66,5 +66,6 @@ var mode = {
 
 
 CodeMirror.defineSimpleMode("argdown", mode);
+CodeMirror.defineSimpleMode("argdown-map", mode);
 
 module.exports = mode;

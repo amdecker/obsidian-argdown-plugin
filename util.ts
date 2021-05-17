@@ -2,7 +2,11 @@ import {exec} from "child_process";
 const isWin = process.platform === "win32";
 
 export const doArgdownProcessing = async (fileContents:string, nameFile: string) => {
-	if (await createTempFile(fileContents, nameFile))
+	let out = await createTempFile(fileContents, nameFile);
+	if (out === "making directory") {
+		out = await createTempFile(fileContents, nameFile);
+	}
+	if (out)
 	{
 		let command = `argdown web-component  "./argmaps/${nameFile}.md" ./argmaps`
 		if (isWin) {
@@ -12,17 +16,27 @@ export const doArgdownProcessing = async (fileContents:string, nameFile: string)
 		await runCmd(command);
 		return await getWebComponent(nameFile);
 	}
-
 };
 
 const createTempFile = (fileContent:string, nameFile: string) => {
 	return new Promise(resolve => {
 		var fs = require('fs');
 		let path = `./argmaps/${nameFile}.md`;
-		fs.writeFile(path, fileContent, (err: any) => {
+		fs.writeFile(path, fileContent, async (err: any) => {
 			if (err) {
-				throw err;
-				resolve(false);
+				console.log(err.toString());
+				if(err.toString().contains("ENOENT: no such file or directory, open")) {
+					let command = `mkdir ./argmaps/`
+					if (isWin) {
+						command = `mkdir %CD%\\argmaps`
+					}
+					await runCmd(command);
+					resolve("making directory");
+				}
+				else {
+					throw err;
+				}
+
 			}
 			console.log("The file was succesfully saved!");
 			resolve(true);

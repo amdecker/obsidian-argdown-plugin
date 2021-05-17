@@ -4,7 +4,7 @@ const isWin = process.platform === "win32";
 export const doArgdownProcessing = async (fileContents:string, nameFile: string) => {
 	if (await createTempFile(fileContents, nameFile))
 	{
-		let command = `argdown web-component  "/argmaps/${nameFile}.md" ./argmaps`
+		let command = `argdown web-component  "./argmaps/${nameFile}.md" ./argmaps`
 		if (isWin) {
 			command = `argdown web-component "%CD%\\argmaps\\${nameFile}.md" %CD%\\argmaps`
 		}

@@ -37,9 +37,9 @@ async function testing(source: string, el: HTMLElement, ctx: MarkdownPostProcess
 
 	clearTimeout(rerender);
 	rerender = setTimeout(async () => {
-		el.innerHTML = `<iframe src="app://local/${await doArgdownProcessing(source, nameFile)}" style="height: 80vh; border: none" scrolling="no" width="100%"></iframe>`;
+		el.innerHTML = `<iframe src="app://local/${await doArgdownProcessing(source, nameFile)}" style="height: 80vh; border: none;" scrolling="no" width="100%"></iframe>`;
 
-	}, 400)
+	}, 350)
 
 	el.innerText = source;
 }

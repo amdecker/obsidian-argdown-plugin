@@ -1,16 +1,14 @@
 import {exec} from "child_process";
 const isWin = process.platform === "win32";
+const pathToAppDir = __dirname.substring(0, __dirname.length - "electron.asar\\renderer".length);
+
 
 export const doArgdownProcessing = async (fileContents:string, nameFile: string) => {
-	let out = await createTempFile(fileContents, nameFile);
-	if (out === "making directory") {
-		out = await createTempFile(fileContents, nameFile);
-	}
-	if (out)
+	if (await createTempFile(fileContents, nameFile))
 	{
-		let command = `argdown web-component  "./argmaps/${nameFile}.md" ./argmaps`
-		if (isWin) {
-			command = `argdown web-component "%CD%\\argmaps\\${nameFile}.md" %CD%\\argmaps`
+		let command = `export PATH="$PATH:"/usr/local/bin/; argdown web-component "${pathToAppDir}${nameFile}.md" ${pathToAppDir}`
+		if(isWin) {
+			command = `argdown web-component  "${pathToAppDir}${nameFile}.md" ${pathToAppDir}`
 		}
 
 		await runCmd(command);
@@ -21,21 +19,11 @@ export const doArgdownProcessing = async (fileContents:string, nameFile: string)
 const createTempFile = (fileContent:string, nameFile: string) => {
 	return new Promise(resolve => {
 		var fs = require('fs');
-		let path = `./argmaps/${nameFile}.md`;
+		let path = pathToAppDir + nameFile + ".md";
+
 		fs.writeFile(path, fileContent, async (err: any) => {
 			if (err) {
-				console.log(err.toString());
-				if(err.toString().contains("ENOENT: no such file or directory, open")) {
-					let command = `mkdir ./argmaps/`
-					if (isWin) {
-						command = `mkdir %CD%\\argmaps`
-					}
-					await runCmd(command);
-					resolve("making directory");
-				}
-				else {
-					throw err;
-				}
+				throw err;
 
 			}
 			console.log("The file was succesfully saved!");
@@ -46,12 +34,17 @@ const createTempFile = (fileContent:string, nameFile: string) => {
 };
 
 export const getWebComponent = async (nameFile: string) => {
-	let command = `cat "./argmaps/${nameFile}.component.html"`;
+	let command = `cat "${pathToAppDir}${nameFile}.component.html"`;
 	if (isWin) {
-		command = `type "%CD%\\argmaps\\${nameFile}.component.html"`;
+		command = `type "${pathToAppDir}${nameFile}.component.html"`;
 	}
 	await runCmd(command);
-	return `argmaps\\${nameFile}.component.html`;
+	if(isWin) {
+		return `resources\\${nameFile}.component.html`;
+	}
+
+	return `${pathToAppDir}${nameFile}.component.html`;
+
 
 };
 
@@ -60,6 +53,7 @@ const runCmd = (command:string) => {
 		const ls = exec(command);
 		const chunks:String[] = [];
 		ls.stdout.on('data', (data) => {
+			// console.log(data);
 			chunks.push(data);
 		});
 

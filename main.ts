@@ -22,8 +22,8 @@ export default class MyPlugin extends Plugin {
 	async onload() {
 		this.app.workspace.iterateCodeMirrors(cm => cm.setOption("mode", cm.getOption("mode")))
 
-		this.registerMarkdownCodeBlockProcessor("argdown", testing);
-		this.registerMarkdownCodeBlockProcessor("argdown-map", testing);
+		this.registerMarkdownCodeBlockProcessor("argdown", codeBlockProcessor);
+		this.registerMarkdownCodeBlockProcessor("argdown-map", codeBlockProcessor);
 	}
 
 	onunload() {
@@ -32,7 +32,7 @@ export default class MyPlugin extends Plugin {
 }
 
 let rerender: NodeJS.Timeout;
-async function testing(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+async function codeBlockProcessor(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
 	const nameFile = ctx.sourcePath.substring(0, ctx.sourcePath.length - 3);
 
 	clearTimeout(rerender);

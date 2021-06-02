@@ -27,10 +27,11 @@ export default class MyPlugin extends Plugin {
 
 		this.app.workspace.on("layout-change", () => {
 			addTimeoutBeforeRerender = false;
-			console.log('layout changed')
 		});
 
 		this.app.workspace.on("quit", () => deleteTmpDir());
+
+
 	}
 
 

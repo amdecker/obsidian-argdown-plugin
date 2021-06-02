@@ -1,5 +1,6 @@
 import {exec} from "child_process";
 import ErrnoException = NodeJS.ErrnoException;
+import {Notice} from "obsidian";
 
 const fs = require('fs');
 const path = require('path');
@@ -38,6 +39,9 @@ const runCmd = (command:string) => {
 		});
 
 		ls.stderr.on('data', (data) => {
+			if(data.toString().contains("Argdown syntax error")) {
+				new Notice("Argdown syntax error");
+			}
 			console.error(`stderr: ${data}`);
 		});
 

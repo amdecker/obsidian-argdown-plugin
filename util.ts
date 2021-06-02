@@ -1,51 +1,33 @@
 import {exec} from "child_process";
+import ErrnoException = NodeJS.ErrnoException;
+
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+
 const isWin = process.platform === "win32";
-const pathToAppDir = __dirname.substring(0, __dirname.length - "electron.asar\\renderer".length);
+
+let pathToTmpDir = "";
 
 
 export const doArgdownProcessing = async (fileContents:string, nameFile: string) => {
-	if (await createTempFile(fileContents, nameFile))
-	{
-		let command = `export PATH="$PATH:"/usr/local/bin/; argdown web-component "${pathToAppDir}${nameFile}.md" ${pathToAppDir}`
-		if(isWin) {
-			command = `argdown web-component  "${pathToAppDir}${nameFile}.md" ${pathToAppDir}`
-		}
+	await createTempMarkdownFile(fileContents, nameFile);
+	// console.log(await runCmd(`type "${pathToTmpDir}${nameFile}.md"`));
 
-		await runCmd(command);
-		return await getWebComponent(nameFile);
-	}
-};
+	// I add the slash in at createTmpDir because its easier to take it out than to add it in everywhere
+	const pathWithoutTrailingSlash = pathToTmpDir.substring(0, pathToTmpDir.length - 1);
 
-const createTempFile = (fileContent:string, nameFile: string) => {
-	return new Promise(resolve => {
-		var fs = require('fs');
-		let path = pathToAppDir + nameFile + ".md";
-
-		fs.writeFile(path, fileContent, async (err: any) => {
-			if (err) {
-				throw err;
-
-			}
-			console.log("The file was succesfully saved!");
-			resolve(true);
-		});
-	})
-
-};
-
-export const getWebComponent = async (nameFile: string) => {
-	let command = `cat "${pathToAppDir}${nameFile}.component.html"`;
-	if (isWin) {
-		command = `type "${pathToAppDir}${nameFile}.component.html"`;
+	let command = `export PATH="$PATH:"/usr/local/bin/; argdown web-component "${pathToTmpDir}${nameFile}.md" "${pathWithoutTrailingSlash}"`
+	if(isWin) {
+		command = `argdown web-component "${pathToTmpDir}${nameFile}.md" "${pathWithoutTrailingSlash}"`
 	}
 	await runCmd(command);
-	if(isWin) {
-		return `resources\\${nameFile}.component.html`;
-	}
+	return `${pathToTmpDir}${nameFile}.component.html`;
+};
 
-	return `${pathToAppDir}${nameFile}.component.html`;
-
-
+const createTempMarkdownFile = async (fileContent:string, nameFile: string) => {
+	let path = pathToTmpDir + nameFile + ".md";
+	return fs.promises.writeFile(path, fileContent);
 };
 
 const runCmd = (command:string) => {
@@ -66,5 +48,25 @@ const runCmd = (command:string) => {
 			resolve(chunks.join(''));
 
 		});
+	});
+};
+
+export const createTmpDir = () => {
+	fs.mkdtemp(path.join(os.tmpdir(), 'tmp-'), (err:ErrnoException, folder:string) => {
+		if (err) throw err;
+		console.log(folder);
+		pathToTmpDir = folder;
+		if(isWin) {
+			pathToTmpDir += '\\';
+		}
+		else {
+			pathToTmpDir += '/';
+		}
+	});
+};
+
+export const deleteTmpDir = () => {
+	fs.rmdir(pathToTmpDir, {recursive: true}, (err:ErrnoException) => {
+		if (err) throw err;
 	});
 };

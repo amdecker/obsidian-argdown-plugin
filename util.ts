@@ -12,7 +12,6 @@ let pathToTmpDir = "";
 
 export const doArgdownProcessing = async (fileContents:string, nameFile: string) => {
 	await createTempMarkdownFile(fileContents, nameFile);
-	// console.log(await runCmd(`type "${pathToTmpDir}${nameFile}.md"`));
 
 	// I add the slash in at createTmpDir because its easier to take it out than to add it in everywhere
 	const pathWithoutTrailingSlash = pathToTmpDir.substring(0, pathToTmpDir.length - 1);
@@ -25,7 +24,7 @@ export const doArgdownProcessing = async (fileContents:string, nameFile: string)
 	return `${pathToTmpDir}${nameFile}.component.html`;
 };
 
-const createTempMarkdownFile = async (fileContent:string, nameFile: string) => {
+export const createTempMarkdownFile = async (fileContent:string, nameFile: string) => {
 	let path = pathToTmpDir + nameFile + ".md";
 	return fs.promises.writeFile(path, fileContent);
 };
@@ -35,7 +34,6 @@ const runCmd = (command:string) => {
 		const ls = exec(command);
 		const chunks:String[] = [];
 		ls.stdout.on('data', (data) => {
-			// console.log(data);
 			chunks.push(data);
 		});
 
@@ -46,7 +44,6 @@ const runCmd = (command:string) => {
 		ls.on('close', (code) => {
 			console.log(`child process exited with code ${code}`);
 			resolve(chunks.join(''));
-
 		});
 	});
 };
@@ -54,7 +51,6 @@ const runCmd = (command:string) => {
 export const createTmpDir = () => {
 	fs.mkdtemp(path.join(os.tmpdir(), 'tmp-'), (err:ErrnoException, folder:string) => {
 		if (err) throw err;
-		console.log(folder);
 		pathToTmpDir = folder;
 		if(isWin) {
 			pathToTmpDir += '\\';
@@ -69,4 +65,18 @@ export const deleteTmpDir = () => {
 	fs.rmdir(pathToTmpDir, {recursive: true}, (err:ErrnoException) => {
 		if (err) throw err;
 	});
+};
+
+export const deleteTmpFiles = async (nameFile: string) => {
+	let command = `rm "${pathToTmpDir}${nameFile}.md"`;
+	if(isWin) {
+		command = `del "${pathToTmpDir}${nameFile}.md"`;
+	}
+	await runCmd(command);
+
+	command = `rm "${pathToTmpDir}${nameFile}.component.html"`;
+	if(isWin) {
+		command = `del "${pathToTmpDir}${nameFile}.component.html"`;
+	}
+	await runCmd(command);
 };

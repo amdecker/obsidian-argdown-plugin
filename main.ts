@@ -30,8 +30,6 @@ export default class MyPlugin extends Plugin {
 		});
 
 		this.app.workspace.on("quit", () => deleteTmpDir());
-
-
 	}
 
 
@@ -47,8 +45,8 @@ const waitAfterLastKeypress = 350; // rerenders this many millis after the last 
 
 let didStartResetTimeout = false;
 // time to wait before using the timeout for the rerenders.
-// 15 secs is way more time than it takes to allow all the automatic renders to happen
-const numMillisUseTimeout = 15000;
+// way more time than it takes to allow all the automatic renders to happen
+const numMillisUseTimeout = 7000;
 
 async function codeBlockProcessor(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
 	el.innerText = source;

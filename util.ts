@@ -17,8 +17,7 @@ export const doArgdownProcessing = async (fileContents:string, nameFile: string)
 	// I add the slash in at createTmpDir because its easier to take it out than to add it in everywhere
 	const pathWithoutTrailingSlash = pathToTmpDir.substring(0, pathToTmpDir.length - 1);
 
-	let command = `export PATH="$PATH:"/usr/local/bin/; argdown web-component '
-	${pathToTmpDir.replaceAll('"', "\"").replaceAll("'", "\'\"\'\"\'")}${nameFile.replaceAll('"', "\"").replaceAll("'", "\'\"\'\"\'")}.md' '${pathWithoutTrailingSlash.replaceAll('"', "\"").replaceAll("'", "\'\"\'\"\'")}'`
+	let command = `export PATH="$PATH:"/usr/local/bin/; argdown web-component '${pathToTmpDir.replaceAll('"', "\"").replaceAll("'", "\'\"\'\"\'")}${nameFile.replaceAll('"', "\"").replaceAll("'", "\'\"\'\"\'")}.md' '${pathWithoutTrailingSlash.replaceAll('"', "\"").replaceAll("'", "\'\"\'\"\'")}'`
 	if(isWin) {
 		command = `argdown web-component "${pathToTmpDir}${nameFile}.md" "${pathWithoutTrailingSlash}"`
 	}

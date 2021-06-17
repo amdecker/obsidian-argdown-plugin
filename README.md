@@ -7,7 +7,7 @@
 * view your maps in the Preview Pane
 
 ## Demo
-![demo](demo.gif)
+![demo](https://raw.githubusercontent.com/amdecker/obsidian-argdown-plugin/master/demo.gif)
 
 ## How to Use
 Remember, you need to have [Argdown cli](https://github.com/christianvoigt/argdown/tree/master/packages/argdown-cli) installed.

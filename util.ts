@@ -22,7 +22,7 @@ export const doArgdownProcessing = async (fileContents:string, nameFile: string)
 		command = `argdown web-component "${sanitize(pathToTmpDir + nameFile)}.md" "${sanitize(pathWithoutTrailingSlash)}"`
 	}
 	await runCmd(command);
-	return `${pathToTmpDir}${nameFile}.component.html`.replaceAll('"', "%22");
+	return `${pathToTmpDir}${nameFile}.component.html`.replace(/"/g, "%22");
 };
 
 export const createTempMarkdownFile = async (fileContent:string, nameFile: string) => {
@@ -87,7 +87,7 @@ export const deleteTmpFiles = async (nameFile: string) => {
 
 
 const sanitize = (command:string) => {
-	return command.replaceAll(/[ !"#$&'()*;<>?\[\\`{|~\t\n]/g, (match:string) => {
+	return command.replace(/[ !"#$&'()*;<>?\[\\`{|~\t\n]/g, (match:string) => {
 		if(match === "'") {
 			return "\'\"\'\"\'";
 		}

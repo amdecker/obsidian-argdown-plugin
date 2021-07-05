@@ -1,16 +1,23 @@
 # Argument Map with Argdown in Obsidian
-**NB** You must have Argdown cli installed. See https://github.com/christianvoigt/argdown/tree/master/packages/argdown-cli for instructions. I'm working on bundling Argdown with this plugin, but for now that's not the case.
+
+## Version 2.0 Changes
+Version 2.0 comes with the Argdown processor. No need to install any
+extra programs!
+
+To get started, just install the plugin from the Obsidian Community Plugins list and start mapping. That's it.
+
 
 ## Features
 * syntax highlighting
 * start codeblocks with argdown or argdown-map 
 * view your maps in the Preview Pane
+* multiple Argdown blocks in one file
 
 ## Demo
 ![demo](https://raw.githubusercontent.com/amdecker/obsidian-argdown-plugin/master/demo.gif)
 
 ## How to Use
-Remember, you need to have [Argdown cli](https://github.com/christianvoigt/argdown/tree/master/packages/argdown-cli) installed.
+Check out https://argdown.org for more information on usage & syntax.
 
 Add an Argdown codeblock to your note and just start typing. The preview will automatically update.
 ````markdown

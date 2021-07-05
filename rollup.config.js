@@ -25,8 +25,8 @@ export default {
   plugins: [
     typescript(),
     nodeResolve({browser: true}),
-    commonjs(),
-    scss({ output: 'styles.css', sass: require('sass') })
+    commonjs({ignoreDynamicRequires: true}),
+    scss({ output: 'styles.css', sass: require('sass'), })
   ]
 };
 

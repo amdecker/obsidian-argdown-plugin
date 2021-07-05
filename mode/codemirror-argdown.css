@@ -2,6 +2,10 @@
 Modified from https://github.com/christianvoigt/argdown/tree/master/packages/argdown-codemirror-mode
  */
 
+.cm-s-obsidian pre.HyperMD-codeblock {
+  color: #000000;
+}
+
 .theme-dark .cm-s-obsidian pre.HyperMD-codeblock {
   color: #d4d4d4;
 }

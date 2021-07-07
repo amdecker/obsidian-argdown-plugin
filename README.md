@@ -1,10 +1,10 @@
 # Argument Map with Argdown in Obsidian
 
 ## Version 2.0 Changes
-Version 2.0 comes with the Argdown processor. No need to install any
+* Version 2.0 comes with the Argdown processor. No need to install any
 extra programs!
-
-To get started, just install the plugin from the Obsidian Community Plugins list and start mapping. That's it.
+* To get started, just install the plugin from the Obsidian Community Plugins list and start mapping. That's it.
+* On the settings page you can change the default view to source or map
 
 
 ## Features

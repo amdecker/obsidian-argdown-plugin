@@ -37,3 +37,6 @@ or
     - con 1
 ```
 ````
+
+## Dark Mode
+See suggestion of [@trungng2006](https://github.com/trungng2006): https://github.com/amdecker/obsidian-argdown-plugin/issues/3

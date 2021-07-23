@@ -15,11 +15,13 @@ import {
 	ArgdownApplication,
 	IArgdownRequest,
 	ParserPlugin,
+	DataPlugin,
 	ModelPlugin,
 	ColorPlugin,
 	HighlightSourcePlugin,
 	WebComponentExportPlugin,
 	MapPlugin,
+	GroupPlugin,
 	ClosedGroupPlugin,
 	DotExportPlugin,
 	PreselectionPlugin,
@@ -87,6 +89,9 @@ function argdownInputToComponent(input: string) {
 	const parserPlugin = new ParserPlugin();
 	app.addPlugin(parserPlugin, "parse-input");
 
+	const dataPlugin = new DataPlugin();
+	app.addPlugin(dataPlugin, "data");
+
 	const modelPlugin = new ModelPlugin();
 	app.addPlugin(modelPlugin, "build-model");
 
@@ -101,6 +106,9 @@ function argdownInputToComponent(input: string) {
 
 	const mapPlugin = new MapPlugin();
 	app.addPlugin(mapPlugin, "build-map");
+
+	const groupPlugin = new GroupPlugin();
+	app.addPlugin(groupPlugin, "groups");
 
 	const closedGroupPlugin = new ClosedGroupPlugin();
 	app.addPlugin(closedGroupPlugin, "transform-closed-groups");
@@ -124,11 +132,13 @@ function argdownInputToComponent(input: string) {
 		input,
 		process: [
 			"parse-input",
+			"data",
 			"build-model",
 			"pre",
 			"statement",
 			"argument",
 			"build-map",
+			"groups",
 			"transform-closed-groups",
 			"colorize",
 			"export-dot",
@@ -184,7 +194,6 @@ const setupScripts = () => {
 	//"https://cdn.jsdelivr.net/npm/@argdown/web-components/dist/argdown-map.css";
 	const stylesheet = document.createElement("style");//document.createElement("link");
 	stylesheet.innerHTML = webComponentStyle;
-
 
 	const webComponentScript = document.createElement("script");
 	webComponentScript.src = "data:text/javascript;charset=utf-8," + webcomponentsBundle;

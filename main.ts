@@ -27,7 +27,8 @@ import {
 	PreselectionPlugin,
 	StatementSelectionPlugin,
 	ArgumentSelectionPlugin,
-	HtmlExportPlugin
+	HtmlExportPlugin,
+	ExplodeArgumentsPlugin
 } from "./lib/argown-core";
 import {SyncDotToSvgExportPlugin } from "@argdown/core/dist/plugins/SyncDotToSvgExportPlugin"; // it needs to be exported explicitly
 
@@ -95,6 +96,9 @@ function argdownInputToComponent(input: string) {
 	const modelPlugin = new ModelPlugin();
 	app.addPlugin(modelPlugin, "build-model");
 
+	const explodeArgumentsPlugin = new ExplodeArgumentsPlugin();
+	app.addPlugin(explodeArgumentsPlugin, "explode-arguments");
+
 	const preSelectionPlugin = new PreselectionPlugin();
 	app.addPlugin(preSelectionPlugin, "pre");
 
@@ -134,6 +138,7 @@ function argdownInputToComponent(input: string) {
 			"parse-input",
 			"data",
 			"build-model",
+			"explode-arguments",
 			"pre",
 			"statement",
 			"argument",

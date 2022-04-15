@@ -12,6 +12,8 @@ import "./mode/codemirror-argdown";
 import "./mode/codemirror-argdown.css";
 
 import {
+	IArgdownPlugin,
+	IRequestHandler,
 	ArgdownApplication,
 	IArgdownRequest,
 	ParserPlugin,
@@ -27,13 +29,45 @@ import {
 	PreselectionPlugin,
 	StatementSelectionPlugin,
 	ArgumentSelectionPlugin,
-	HtmlExportPlugin,
 	ExplodeArgumentsPlugin
 } from "./lib/argown-core";
 import {SyncDotToSvgExportPlugin } from "@argdown/core/dist/plugins/SyncDotToSvgExportPlugin"; // it needs to be exported explicitly
 
 import {argdownMapScript, webComponentStyle, webcomponentsBundle} from "webComponentScriptAndStyle";
 
+class AddLinkstoSVG implements IArgdownPlugin{
+        name: string = "AddLinkstoSVG";
+        run: IRequestHandler = (_request: Request, response: Response) => {
+			var parser = new DOMParser();
+			var doc = parser.parseFromString(response.svg, "image/svg+xml");
+			var nodes = response.map.nodes;
+
+			for (var node of nodes) {
+				if (!node.labelTextRanges) {
+					continue;
+				}
+				var current_node_id = node.id;
+				//Creating the ID of the nodes according to the formula: 'nx' = 'node(x+1)'
+				var svg_id = "node" + (parseInt(current_node_id[1]) + 1);
+				var current_svg_element = doc.getElementById(svg_id);
+
+				//only the first obsidian link found will be used to wrap the title
+				for (var range of node.labelTextRanges) {
+					if (range.type == 'obsidian-link') {
+						//the first text element is the title
+						var text_title = current_svg_element.getElementsByTagName("text")[0];
+						text_title.innerHTML = `<a data-href="${range.text}" href="${range.text}" class="internal-link" target="_blank" rel="noopener">` +
+												text_title.innerHTML +
+												`</a>`;
+						break;	
+					}
+				}
+			}
+
+			response.svg = doc.documentElement.outerHTML;
+			return response;
+		}
+}
 
 interface MyPluginSettings {
 	initialView: string;
@@ -79,6 +113,7 @@ export default class MyPlugin extends Plugin {
 		el.innerHTML = `${argdownInputToComponent(source)}`;
 	}
 }
+
 
 /**
  *  Takes in argdown syntax and returns a web component with the map
@@ -129,6 +164,9 @@ function argdownInputToComponent(input: string) {
 	const highlightSourcePlugin = new HighlightSourcePlugin();
 	app.addPlugin(highlightSourcePlugin, "highlight-source");
 
+	const addLinkstoSVG = new AddLinkstoSVG();
+	app.addPlugin(addLinkstoSVG, "addLinksSVG");
+
 	const webComponentExportPlugin = new WebComponentExportPlugin({initialView: pluginSettings.initialView});
 	app.addPlugin(webComponentExportPlugin, "export-web-component");
 
@@ -149,10 +187,13 @@ function argdownInputToComponent(input: string) {
 			"export-dot",
 			"export-svg",
 			"highlight-source",
+			"addLinksSVG",
 			"export-web-component"
+
 		],
-		// logLevel: "verbose"
+		logLevel: "verbose"
 	}
+
 	return app.run(request).webComponent;
 }
 

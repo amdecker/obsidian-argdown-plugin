@@ -43,22 +43,25 @@ class AddLinkstoSVG implements IArgdownPlugin{
 			var nodes = response.map.nodes;
 
 			for (var node of nodes) {
-				var current_id = node.id;
-				//nx -> node(x+1)
-				var svg_id = "node" + (parseInt(current_id[1]) + 1);
-				var current_svg_element = doc.getElementById(svg_id);
 				if (!node.labelTextRanges) {
 					continue;
 				}
-				//only the first element will be used
-				var range = node.labelTextRanges[0];
-				if (range.type == 'obsidian-link') {
-					var text_title = current_svg_element.getElementsByTagName("text")[0];
-					text_title.innerHTML = `<a data-href="${range.text}" href="${range.text}" class="internal-link" target="_blank" rel="noopener">` +
-												text_title.innerHTML +
-											`</a>`;
-				}
+				var current_node_id = node.id;
+				//Creating the ID of the nodes according to the formula: 'nx' = 'node(x+1)'
+				var svg_id = "node" + (parseInt(current_node_id[1]) + 1);
+				var current_svg_element = doc.getElementById(svg_id);
 
+				//only the first obsidian link found will be used to wrap the title
+				for (var range of node.labelTextRanges) {
+					if (range.type == 'obsidian-link') {
+						//the first text element is the title
+						var text_title = current_svg_element.getElementsByTagName("text")[0];
+						text_title.innerHTML = `<a data-href="${range.text}" href="${range.text}" class="internal-link" target="_blank" rel="noopener">` +
+												text_title.innerHTML +
+												`</a>`;
+						break;	
+					}
+				}
 			}
 
 			response.svg = doc.documentElement.outerHTML;

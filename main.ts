@@ -27,56 +27,53 @@ import {
 	PreselectionPlugin,
 	StatementSelectionPlugin,
 	ArgumentSelectionPlugin,
-	HtmlExportPlugin,
 	ExplodeArgumentsPlugin
 } from "@argdown/core";
 import {SyncDotToSvgExportPlugin } from "@argdown/core/dist/plugins/SyncDotToSvgExportPlugin";
 
-interface MyPluginSettings {
+interface ArgdownPluginSettings {
 	initialView: string;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
+const DEFAULT_SETTINGS: ArgdownPluginSettings = {
 	initialView: 'map'
 }
-
-let pluginSettings = {};
 
 const WEB_COMPONENT_SCRIPT_ID = "argdown-web-component-script";
 const WEB_COMPONENT_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/@argdown/web-components@2.0.1/dist/argdown-map.js";
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class ArgdownPlugin extends Plugin {
+	settings: ArgdownPluginSettings = { ...DEFAULT_SETTINGS };
 
-	async onload() {
-		console.log("loading Argdown Plugin");
-		setupScripts();
-
-		await this.loadSettings()
+	onload(): void {
+		void this.loadSettings();
 		this.addSettingTab(new ArgdownSettingsTab(this.app, this));
 
 		this.registerMarkdownCodeBlockProcessor("argdown", this.codeBlockProcessor);
 		this.registerMarkdownCodeBlockProcessor("argdown-map", this.codeBlockProcessor);
 
 	}
+
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-		pluginSettings = this.settings;
+		const savedSettings = (await this.loadData()) as Partial<ArgdownPluginSettings> | undefined;
+		this.settings = { ...DEFAULT_SETTINGS, ...savedSettings };
 	}
 
 	async saveSettings() {
-		pluginSettings = this.settings;
 		await this.saveData(this.settings);
 	}
 	onunload() {
-		console.log('unloading Argdown plugin');
 	}
 
 	/**
 	 * updates the preview pane, replaces the codeblock preview with the argument map
 	 */
-	codeBlockProcessor(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
-		el.innerHTML = `${argdownInputToComponent(source)}`;
+	codeBlockProcessor = (source: string, el: HTMLElement, _ctx: MarkdownPostProcessorContext) => {
+		setupScripts(el.ownerDocument);
+		// Argdown returns trusted HTML generated from its own renderer.
+		// eslint-disable-next-line no-unsanitized/method
+		const fragment = el.ownerDocument.createRange().createContextualFragment(argdownInputToComponent(source));
+		el.replaceChildren(fragment);
 	}
 }
 
@@ -130,14 +127,14 @@ function argdownInputToComponent(input: string) {
 	app.addPlugin(highlightSourcePlugin, "highlight-source");
 
 	const webComponentExportPlugin = new WebComponentExportPlugin({
-		initialView: pluginSettings.initialView,
+		initialView: DEFAULT_SETTINGS.initialView,
 		addWebComponentScript: false,
 		addWebComponentPolyfill: false,
 		addGlobalStyles: false
 	});
 	app.addPlugin(webComponentExportPlugin, "export-web-component");
 
-	const request:IArgdownRequest = {
+	const request: IArgdownRequest = {
 		input,
 		process: [
 			"parse-input",
@@ -158,7 +155,7 @@ function argdownInputToComponent(input: string) {
 		],
 		// logLevel: "verbose"
 	}
-	const webComponent = app.run(request).webComponent;
+	const { webComponent } = app.run(request) as { webComponent?: string };
 	return normalizeWebComponentAttributes(webComponent);
 }
 
@@ -175,9 +172,9 @@ const normalizeWebComponentAttributes = (webComponent?: string) => {
 }
 
 class ArgdownSettingsTab extends PluginSettingTab {
-	plugin: MyPlugin;
+	plugin: ArgdownPlugin;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: ArgdownPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -187,14 +184,16 @@ class ArgdownSettingsTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', {text: 'Argdown Plugin Settings'});
+		new Setting(containerEl)
+			.setName('Argdown')
+			.setHeading();
 
-		const firstOption = pluginSettings.initialView;
-		const secondOption = pluginSettings.initialView === "map" ? "source" : "map";
+		const firstOption = this.plugin.settings.initialView;
+		const secondOption = this.plugin.settings.initialView === "map" ? "source" : "map";
 
 		new Setting(containerEl)
-			.setName('Initial View')
-			.setDesc('What should display by default when you edit your Argdown')
+			.setName('Initial view')
+			.setDesc('What should display by default when you edit your argdown.')
 			.addDropdown(dropdown => dropdown
 				.addOption(firstOption, firstOption)
 					.onChange(async (value) => {
@@ -213,15 +212,15 @@ class ArgdownSettingsTab extends PluginSettingTab {
 /**
  * loads the web component assets so argdown-map renders in the preview
  */
-const setupScripts = () => {
-	const head = document.head ?? document.getElementsByTagName("head")[0];
+const setupScripts = (doc: Document) => {
+	const head = doc.head ?? doc.getElementsByTagName("head")[0];
 	if (!head) {
 		console.warn("Argdown plugin: document head not available for web component assets");
 		return;
 	}
 
-	if (!document.getElementById(WEB_COMPONENT_SCRIPT_ID)) {
-		const webComponentScript = document.createElement("script");
+	if (!doc.getElementById(WEB_COMPONENT_SCRIPT_ID)) {
+		const webComponentScript = doc.createElement("script");
 		webComponentScript.id = WEB_COMPONENT_SCRIPT_ID;
 		webComponentScript.src = WEB_COMPONENT_SCRIPT_URL;
 		webComponentScript.type = "module";

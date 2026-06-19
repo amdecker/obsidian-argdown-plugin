@@ -29,11 +29,8 @@ import {
 	ArgumentSelectionPlugin,
 	HtmlExportPlugin,
 	ExplodeArgumentsPlugin
-} from "./lib/argown-core";
-import {SyncDotToSvgExportPlugin } from "@argdown/core/dist/plugins/SyncDotToSvgExportPlugin"; // it needs to be exported explicitly
-
-import {argdownMapScript, webComponentStyle, webcomponentsBundle} from "webComponentScriptAndStyle";
-
+} from "@argdown/core";
+import {SyncDotToSvgExportPlugin } from "@argdown/core/dist/plugins/SyncDotToSvgExportPlugin";
 
 interface MyPluginSettings {
 	initialView: string;
@@ -44,6 +41,9 @@ const DEFAULT_SETTINGS: MyPluginSettings = {
 }
 
 let pluginSettings = {};
+
+const WEB_COMPONENT_SCRIPT_ID = "argdown-web-component-script";
+const WEB_COMPONENT_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/@argdown/web-components@2.0.1/dist/argdown-map.js";
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
@@ -129,7 +129,12 @@ function argdownInputToComponent(input: string) {
 	const highlightSourcePlugin = new HighlightSourcePlugin();
 	app.addPlugin(highlightSourcePlugin, "highlight-source");
 
-	const webComponentExportPlugin = new WebComponentExportPlugin({initialView: pluginSettings.initialView});
+	const webComponentExportPlugin = new WebComponentExportPlugin({
+		initialView: pluginSettings.initialView,
+		addWebComponentScript: false,
+		addWebComponentPolyfill: false,
+		addGlobalStyles: false
+	});
 	app.addPlugin(webComponentExportPlugin, "export-web-component");
 
 	const request:IArgdownRequest = {
@@ -153,7 +158,20 @@ function argdownInputToComponent(input: string) {
 		],
 		// logLevel: "verbose"
 	}
-	return app.run(request).webComponent;
+	const webComponent = app.run(request).webComponent;
+	return normalizeWebComponentAttributes(webComponent);
+}
+
+const normalizeWebComponentAttributes = (webComponent?: string) => {
+	if (!webComponent) {
+		return "";
+	}
+	return webComponent
+		.replace(/initial-view=/g, "initialView=")
+		.replace(/without-zoom=/g, "withoutZoom=")
+		.replace(/without-maximize=/g, "withoutMaximize=")
+		.replace(/without-logo=/g, "withoutLogo=")
+		.replace(/without-header=/g, "withoutHeader=");
 }
 
 class ArgdownSettingsTab extends PluginSettingTab {
@@ -193,25 +211,20 @@ class ArgdownSettingsTab extends PluginSettingTab {
 }
 
 /**
- * grabs all the scripts that are saved offline so that all the styles and functionality is still there even when there is no internet
+ * loads the web component assets so argdown-map renders in the preview
  */
 const setupScripts = () => {
-	//"https://cdn.jsdelivr.net/npm/@argdown/web-components/dist/argdown-map.css";
-	const stylesheet = document.createElement("style");//document.createElement("link");
-	stylesheet.innerHTML = webComponentStyle;
+	const head = document.head ?? document.getElementsByTagName("head")[0];
+	if (!head) {
+		console.warn("Argdown plugin: document head not available for web component assets");
+		return;
+	}
 
-	const webComponentScript = document.createElement("script");
-	webComponentScript.src = "data:text/javascript;charset=utf-8," + webcomponentsBundle;
-	// webComponentScript.src = "https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs/webcomponents-bundle.js";
-	webComponentScript.type = "module";
-
-	const mapScript = document.createElement("script");
-	mapScript.src = "data:text/javascript;charset=utf-8," + argdownMapScript;
-	// mapScript.src = "https://cdn.jsdelivr.net/npm/@argdown/web-components/dist/argdown-map.js";
-	mapScript.type = "text/javascript";
-
-	document.getElementsByTagName("head")[0].appendChild(stylesheet);
-	document.getElementsByTagName("head")[0].appendChild(webComponentScript);
-	document.getElementsByTagName("head")[0].appendChild(mapScript);
+	if (!document.getElementById(WEB_COMPONENT_SCRIPT_ID)) {
+		const webComponentScript = document.createElement("script");
+		webComponentScript.id = WEB_COMPONENT_SCRIPT_ID;
+		webComponentScript.src = WEB_COMPONENT_SCRIPT_URL;
+		webComponentScript.type = "module";
+		head.appendChild(webComponentScript);
+	}
 }
-

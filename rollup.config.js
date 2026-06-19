@@ -19,14 +19,19 @@ export default {
     dir: '.',
     sourcemap: 'inline',
     format: 'cjs',
-    exports: 'default'
+    exports: 'default',
+    interop: 'auto'
   },
   external: ['obsidian'],
   plugins: [
     typescript(),
-    nodeResolve({browser: true}),
-    commonjs({ignoreDynamicRequires: true}),
+    commonjs({
+      ignoreDynamicRequires: true,
+      sourceMap: false,
+      dynamicRequireTargets: [],
+      preferBuiltins: false
+    }),
+    nodeResolve({browser: true, preferBuiltins: false}),
     scss({ output: 'styles.css', sass: require('sass'), })
   ]
 };
-

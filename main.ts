@@ -33,7 +33,6 @@ const DEFAULT_SETTINGS: ArgdownPluginSettings = {
 	initialView: 'map'
 }
 
-const WEB_COMPONENT_SCRIPT_ID = "argdown-web-component-script";
 const WEB_COMPONENT_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/@argdown/web-components@2.0.1/dist/argdown-map.js";
 
 export default class ArgdownPlugin extends Plugin {
@@ -41,6 +40,9 @@ export default class ArgdownPlugin extends Plugin {
 
 	onload(): void {
 		void this.loadSettings();
+		void import(WEB_COMPONENT_SCRIPT_URL).catch(err => 
+			console.error("Argdown plugin: Failed to load web component library:", err)
+		);
 		this.addSettingTab(new ArgdownSettingsTab(this.app, this));
 
 		this.registerMarkdownCodeBlockProcessor("argdown", this.codeBlockProcessor);
@@ -62,7 +64,6 @@ export default class ArgdownPlugin extends Plugin {
 	 * updates the preview pane, replaces the codeblock preview with the argument map
 	 */
 	codeBlockProcessor = (source: string, el: HTMLElement, _ctx: MarkdownPostProcessorContext) => {
-		setupScripts(el.ownerDocument);
 		// eslint-disable-next-line no-unsanitized/method -- Argdown returns trusted HTML generated from its own renderer.
 		const fragment = el.ownerDocument.createRange().createContextualFragment(argdownInputToComponent(source));
 		el.replaceChildren(fragment);
@@ -201,21 +202,3 @@ class ArgdownSettingsTab extends PluginSettingTab {
 	}
 }
 
-/**
- * loads the web component assets so argdown-map renders in the preview
- */
-const setupScripts = (doc: Document) => {
-	const head = doc.head ?? doc.getElementsByTagName("head")[0];
-	if (!head) {
-		console.warn("Argdown plugin: document head not available for web component assets");
-		return;
-	}
-
-	if (!doc.getElementById(WEB_COMPONENT_SCRIPT_ID)) {
-		const webComponentScript = doc.createElement("script");
-		webComponentScript.id = WEB_COMPONENT_SCRIPT_ID;
-		webComponentScript.src = WEB_COMPONENT_SCRIPT_URL;
-		webComponentScript.type = "module";
-		head.appendChild(webComponentScript);
-	}
-}

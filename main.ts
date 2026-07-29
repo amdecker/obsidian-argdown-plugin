@@ -6,11 +6,6 @@ import {
 	App
 } from 'obsidian';
 
-import './lib/codemirror';
-import './lib/simple';
-import "./mode/codemirror-argdown";
-import "./mode/codemirror-argdown.css";
-
 import {
 	ArgdownApplication,
 	IArgdownRequest,
@@ -30,7 +25,6 @@ import {
 	ExplodeArgumentsPlugin
 } from "@argdown/core";
 import {SyncDotToSvgExportPlugin } from "@argdown/core/dist/plugins/SyncDotToSvgExportPlugin";
-
 interface ArgdownPluginSettings {
 	initialView: string;
 }
@@ -51,7 +45,6 @@ export default class ArgdownPlugin extends Plugin {
 
 		this.registerMarkdownCodeBlockProcessor("argdown", this.codeBlockProcessor);
 		this.registerMarkdownCodeBlockProcessor("argdown-map", this.codeBlockProcessor);
-
 	}
 
 	async loadSettings() {
@@ -70,8 +63,7 @@ export default class ArgdownPlugin extends Plugin {
 	 */
 	codeBlockProcessor = (source: string, el: HTMLElement, _ctx: MarkdownPostProcessorContext) => {
 		setupScripts(el.ownerDocument);
-		// Argdown returns trusted HTML generated from its own renderer.
-		// eslint-disable-next-line no-unsanitized/method
+		// eslint-disable-next-line no-unsanitized/method -- Argdown returns trusted HTML generated from its own renderer.
 		const fragment = el.ownerDocument.createRange().createContextualFragment(argdownInputToComponent(source));
 		el.replaceChildren(fragment);
 	}

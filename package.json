@@ -28,9 +28,9 @@
     "rollup-plugin-scss": "^2.6.1",
     "sass": "^1.30.0",
     "tslib": "^2.2.0",
-    "typescript": "^4.2.4"
+    "typescript": "^4.2.4",
+    "@argdown/core": "^1.7.1"
   },
   "dependencies": {
-    "@argdown/core": "^1.7.1"
   }
 }

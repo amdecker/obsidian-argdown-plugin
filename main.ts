@@ -40,7 +40,7 @@ export default class ArgdownPlugin extends Plugin {
 
 	onload(): void {
 		void this.loadSettings();
-		void import(WEB_COMPONENT_SCRIPT_URL).catch(err => 
+		void import("https://cdn.jsdelivr.net/npm/@argdown/web-components@2.0.1/dist/argdown-map.js").catch(err => 
 			console.error("Argdown plugin: Failed to load web component library:", err)
 		);
 		this.addSettingTab(new ArgdownSettingsTab(this.app, this));
